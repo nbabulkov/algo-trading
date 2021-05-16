@@ -24,7 +24,10 @@ def read_config(path):
 def parse_args():
     parser = argparse.ArgumentParser(description="Download data from Binance API")
     parser.add_argument(
-        "--config", "-c", default=DEFAULT_CONFIG, help="Path to JSON config file"
+        "--config",
+        "-c",
+        default=DEFAULT_CONFIG,
+        help="Path to JSON config file containing Binance ID",
     )
     parser.add_argument(
         "--ticker", "-t", required=True, help="Crypto Symbol e.g. ETHUSDT, ADABTC..."
@@ -33,10 +36,13 @@ def parse_args():
         "--start-date", "-s", required=True, help="Start date e.g. 1 Jan 2000"
     )
     parser.add_argument(
-        "--end-date", "-s", default=datetime.today(), help="End date e.g. 21 Dec 2021"
+        "--end-date", "-e", default=datetime.today(), help="End date e.g. 21 Dec 2021"
     )
     parser.add_argument(
         "--interval", "-i", default=Client.KLINE_INTERVAL_1MINUTE, choices=INTERVALS
+    )
+    parser.add_argument(
+        "--output-dir", "-o", default="./data"
     )
     return parser.parse_args()
 
@@ -53,6 +59,13 @@ def main(args):
 
     if not symbol_exists(args.ticker, bclient):
         raise ValueError("No such symbol on Binance: {args.ticker}")
+
+
+    output_filename = f"{args.ticker}_{args.interval}_{args.start_date.replace(' ', '_')}.csv"
+    output_path = os.path.join(args.output_dir, output_filename)
+    if os.path.isfile(output_path):
+        print(f"Data exists: {output_path}")
+        return
 
     start_date = datetime.strptime(args.start_date, "%d %b %Y")
     end_date = args.end_date
@@ -87,8 +100,8 @@ def main(args):
     data["timestamp"] = pd.to_datetime(data["timestamp"], unit="ms")
 
     data.set_index("timestamp", inplace=True)
-    output_file = f"{args.ticker}_{args.interval}_{args.start_date}.csv"
-    data.to_csv(output_file)
+
+    data.to_csv(output_path)
     print("finished!")
 
 
