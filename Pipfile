@@ -9,6 +9,8 @@ backtrader = "*"
 jupyter = "*"
 ipython = "*"
 python-binance = "*"
+colorama = "*"
+matplotlib = "*"
 
 [dev-packages]
 black = "*"
